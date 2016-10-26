@@ -11,7 +11,5 @@ services:
     environment:
       DOCKERCLOUD_USER:
       DOCKERCLOUD_APIKEY:
-    volumes:
-      - "./:/usr/src/app"
     links:
       - traefik
