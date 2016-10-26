@@ -4,6 +4,8 @@ import requests
 import sys
 import time
 
+LABEL = os.environ['DOCKERCLOUD_SUBDOMAINS_LABEL']
+
 def generate_provider(containers):
     provider = {
         "frontends": {},
@@ -13,7 +15,7 @@ def generate_provider(containers):
         container.refresh()
         if not hasattr(container, "labels"):
             continue
-        subdomain = container.labels.get("sh.fir.docker-cloud-subdomain")
+        subdomain = container.labels.get(LABEL)
         if not subdomain:
             continue
 
