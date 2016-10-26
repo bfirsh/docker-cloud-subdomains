@@ -4,7 +4,14 @@ import requests
 import sys
 import time
 
-LABEL = os.environ['DOCKERCLOUD_SUBDOMAINS_LABEL']
+if not os.environ.get("DOCKERCLOUD_SUBDOMAINS_DOMAIN"):
+    print 'Please set the DOCKERCLOUD_SUBDOMAINS_DOMAIN environment variable to specify the domain that subdomains are on.'
+    sys.exit(1)
+
+DOMAIN = os.environ['DOCKERCLOUD_SUBDOMAINS_DOMAIN']
+
+SUBDOMAIN_LABEL = os.environ['DOCKERCLOUD_SUBDOMAINS_SUBDOMAIN_LABEL']
+PORT_LABEL = os.environ['DOCKERCLOUD_SUBDOMAINS_PORT_LABEL']
 
 def generate_provider(containers):
     provider = {
@@ -15,25 +22,28 @@ def generate_provider(containers):
         container.refresh()
         if not hasattr(container, "labels"):
             continue
-        subdomain = container.labels.get(LABEL)
+        subdomain = container.labels.get(SUBDOMAIN_LABEL)
         if not subdomain:
             continue
 
-        if subdomain not in provider["frontends"]:
-            provider["frontends"][subdomain] = {
-                "backend": subdomain,
+        domain = '.'.join([subdomain, DOMAIN])
+
+        if domain not in provider["frontends"]:
+            provider["frontends"][domain] = {
+                "backend": domain,
                 "routes": {
                     "default": {
-                        "rule": "Host: %s" % subdomain,
+                        "rule": "Host: %s" % domain,
                     }
                 }
             }
-        if subdomain not in provider["backends"]:
-            provider["backends"][subdomain] = {
+        if domain not in provider["backends"]:
+            provider["backends"][domain] = {
                 "servers": {},
             }
-        provider["backends"][subdomain]["servers"][container.uuid] = {
-            "url": "http://%s" % container.private_ip,
+        port = container.labels.get(PORT_LABEL, '80')
+        provider["backends"][domain]["servers"][container.uuid] = {
+            "url": "http://{}:{}".format(container.private_ip, port),
         }
 
     return provider

@@ -11,5 +11,6 @@ services:
     environment:
       DOCKERCLOUD_USER:
       DOCKERCLOUD_APIKEY:
+      DOCKERCLOUD_SUBDOMAINS_DOMAIN: example.com
     links:
       - traefik
