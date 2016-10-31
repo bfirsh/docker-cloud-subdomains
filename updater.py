@@ -66,16 +66,14 @@ def main():
     while True:
         containers = dockercloud.Container.list()
         provider = generate_provider(containers)
-        if provider != previous_provider:
-            addresses = get_traefik_ip_addresses()
-            print "Updating {} to {}".format(addresses, provider)
-            for address in addresses:
-                resp = requests.put(
-                    "http://{}:8080/api/providers/web".format(address),
-                    json=provider
-                )
-                resp.raise_for_status()
-            previous_provider = provider
+        addresses = get_traefik_ip_addresses()
+        print "Updating {} to {}".format(addresses, provider)
+        for address in addresses:
+            resp = requests.put(
+                "http://{}:8080/api/providers/web".format(address),
+                json=provider
+            )
+            resp.raise_for_status()
 
         time.sleep(int(os.environ.get("UPDATE_INTERVAL", 30)))
 
