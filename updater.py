@@ -1,3 +1,4 @@
+import dns.resolver
 import dockercloud
 import os
 import requests
@@ -50,6 +51,11 @@ def generate_provider(containers):
 
     return provider
 
+
+def get_traefik_ip_addresses():
+    return [unicode(r) for r in dns.resolver.query('traefik', 'A')]
+
+
 def main():
     if not os.environ.get("DOCKERCLOUD_USER") or not os.environ.get("DOCKERCLOUD_APIKEY"):
         print "Please set DOCKERCLOUD_USER and DOCKERCLOUD_APIKEY environment variables."
@@ -61,9 +67,14 @@ def main():
         containers = dockercloud.Container.list()
         provider = generate_provider(containers)
         if provider != previous_provider:
-            print "Updating provider: %s" % provider
-            resp = requests.put("http://traefik:8080/api/providers/web", json=provider)
-            resp.raise_for_status()
+            addresses = get_traefik_ip_addresses()
+            print "Updating {} to {}".format(addresses, provider)
+            for address in addresses:
+                resp = requests.put(
+                    "http://{}:8080/api/providers/web".format(address),
+                    json=provider
+                )
+                resp.raise_for_status()
             previous_provider = provider
 
         time.sleep(int(os.environ.get("UPDATE_INTERVAL", 30)))

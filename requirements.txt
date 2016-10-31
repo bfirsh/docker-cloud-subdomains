@@ -1,1 +1,2 @@
 python-dockercloud==1.0.8
+dnspython==1.15.0
