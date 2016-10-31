@@ -22,6 +22,8 @@ def generate_provider(containers):
         container.refresh()
         if not hasattr(container, "labels"):
             continue
+        if not container.state == "Running":
+            continue
         subdomain = container.labels.get(SUBDOMAIN_LABEL)
         if not subdomain:
             continue
