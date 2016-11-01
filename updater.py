@@ -38,7 +38,8 @@ def generate_provider(containers):
                     "default": {
                         "rule": "Host: %s" % domain,
                     }
-                }
+                },
+                "passHostHeader": True,
             }
         if domain not in provider["backends"]:
             provider["backends"][domain] = {
